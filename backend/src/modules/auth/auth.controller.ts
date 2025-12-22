@@ -16,7 +16,7 @@ export async function register(req: Request, res: Response) {
   const body = registerSchema.parse(req.body);
   const user = await AuthService.register(body.email, body.password, body.name);
   res.status(201).json({ 
-    id: user.id, 
+    id: user._id, 
     email: user.email, 
     name: user.name 
   });
@@ -26,7 +26,7 @@ export async function login(req: Request, res: Response) {
   const body = loginSchema.parse(req.body);
   const { token, user } = await AuthService.login(body.email, body.password);
   res.json({ token, user: { 
-    id: user.id, 
+    id: user._id, 
     email: user.email, 
     name: user.name 
   } });
