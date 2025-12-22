@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { env } from './env.js'
+import { env } from './env.ts'
 
 mongoose.set('strictQuery', true)
 mongoose.set('autoIndex', env.NODE_ENV !== 'production')

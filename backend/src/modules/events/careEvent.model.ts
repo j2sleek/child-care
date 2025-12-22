@@ -48,3 +48,5 @@ CareEventSchema.index({ childId: 1, startTime: 1 });
 
 const CareEventModel: Model<CareEventDoc> = mongoose.model<CareEventDoc>('CareEvent', CareEventSchema);
 export default CareEventModel;
+export type { CareEventDoc };
+export type { CareEventType };

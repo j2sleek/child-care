@@ -1,7 +1,4 @@
-import { Types } from 'mongoose';
-import CareEventModel from '../events/careEvent.model.js';
-import { requirePermission } from '../../utils/permissions.js';
-import { PipelineStage } from 'mongoose';
+import { Types, type PipelineStage } from 'mongoose';
 export async function sleepSummaryPerDay(userId: string, childId: string) {
   await requirePermission(userId, childId, 'canRead');
   const pipeline: PipelineStage[] = [

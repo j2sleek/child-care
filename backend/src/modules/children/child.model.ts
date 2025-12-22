@@ -28,3 +28,4 @@ const ChildSchema = new Schema<ChildDoc>({
 
 const ChildModel: Model<ChildDoc> = mongoose.model<ChildDoc>('Child', ChildSchema);
 export default ChildModel;
+export type { ChildDoc };

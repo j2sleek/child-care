@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
-import CareEventModel, { CareEventDoc, CareEventType } from './careEvent.model.js';
-import { requirePermission } from '../../utils/permissions.js';
+import CareEventModel, { type CareEventDoc, type CareEventType } from './careEvent.model.ts';
+import { requirePermission } from '../../utils/permissions.ts';
 
 export async function recordEvent(params: { 
     userId: string; 

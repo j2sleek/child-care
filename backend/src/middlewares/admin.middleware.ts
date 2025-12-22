@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express"
-import UserModel from '../modules/users/user.model.js'
+import { type Request, type Response } from "express"
+import UserModel from '../modules/users/user.model.ts'
 
-export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+export async function requireAdmin(req: Request, res: Response, next: (error?: Error | 'route' | 'router') => void) {
   if (!req.user) return res.status(401).json({
     code: 'UNAUTHORIZED',
     message: 'Login required'

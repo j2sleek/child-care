@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
-import { env } from '../../config/env.js'
-import UserModel, { UserDoc } from '../users/user.model.js'
+import { env } from '../../config/env.ts'
+import UserModel, { type UserDoc } from '../users/user.model.ts'
 
 export async function register(email: string, password: string, name?: string): Promise<UserDoc> {
   const existing = await UserModel.findOne({ email });
@@ -36,7 +36,7 @@ export async function login(email: string, password: string): Promise<{ token: s
     throw err;
   }
   const token = jwt.sign(
-    { sub: user.id, email: user.email },
+    { sub: user._id.toString(), email: user.email },
     env.JWT_SECRET,
     { expiresIn: env.JWT_EXPIRES_IN}
   );

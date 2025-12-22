@@ -1,8 +1,11 @@
 import { Types } from 'mongoose';
-import ChildModel, { ChildDoc } from './child.model.js';
-import ChildAccessModel from '../access/childAccess.model.js';
+import ChildModel, { type ChildDoc } from './child.model.ts';
+import ChildAccessModel, { type ChildAccessDoc } from '../access/childAccess.model.ts';
 
 export async function createChild(name: string, dateOfBirth: Date, createdBy: string, role: string): Promise<ChildDoc> {
+  if (!Types.ObjectId.isValid(createdBy)) {
+    throw new Error('Invalid user ID');
+  }
   const child = await ChildModel.create({ 
     name, 
     dateOfBirth, 

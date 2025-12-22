@@ -5,20 +5,20 @@ import compression from 'compression';
 import morgan from 'morgan';
 import { pinoHttp } from 'pino-http';
 
-import { requestId } from './middlewares/requsetId.middleware.js';
-import { errorMiddleware } from './middlewares/error.middleware.js';
-import { rateLimit } from './middlewares/rate.middleware.js';
+import { requestId } from './middlewares/requsetId.middleware.ts';
+import { errorMiddleware } from './middlewares/error.middleware.ts';
+import { rateLimit } from './middlewares/rate.middleware.ts';
 
-import authRoutes from './modules/auth/auth.routes.js';
-import userRoutes from './modules/users/user.routes.js';
-import childRoutes from './modules/children/child.routes.js';
-import accessRoutes from './modules/access/access.routes.js';
-import eventRoutes from './modules/events/event.routes.js';
-import analyticsRoutes from './modules/analytics/analytics.routes.js';
-// import aiRoutes from './modules/ai/ai.routes.js';
-// import aiChatRoutes from './modules/ai/chat.routes.js';
-// import speechRoutes from './modules/ai/speech.routes.js';
-import normsAdminRoutes from './modules/norms/norm.admin.routes.js';
+import authRoutes from './modules/auth/auth.routes.ts';
+import userRoutes from './modules/users/user.routes.ts';
+import childRoutes from './modules/children/child.routes.ts';
+import accessRoutes from './modules/access/access.routes.ts';
+import eventRoutes from './modules/events/event.routes.ts';
+import analyticsRoutes from './modules/analytics/analytics.routes.ts';
+// import aiRoutes from './modules/ai/ai.routes.ts';
+// import aiChatRoutes from './modules/ai/chat.routes.ts';
+// import speechRoutes from './modules/ai/speech.routes.ts';
+import normsAdminRoutes from './modules/norms/norm.admin.routes.ts';
 
 const app = express();
 

@@ -50,3 +50,4 @@ NormSchema.index({
 
 export const NormModel: Model<NormDoc> = mongoose.model<NormDoc>('Norm', NormSchema);
 export default NormModel;
+export type { NormDoc };

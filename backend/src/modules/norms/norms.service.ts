@@ -1,6 +1,6 @@
 import { createClient } from 'redis';
-import { env } from '../../config/env.js';
-import NormModel from './norm.model.js';
+import { env } from '../../config/env.ts';
+import NormModel, { type NormDoc } from './norm.model.ts';
 
 const redis = createClient({ url: env.REDIS_URL });
 redis.connect().catch(() => {});

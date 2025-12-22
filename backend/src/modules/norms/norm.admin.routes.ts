@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { requireAuth } from '../../middlewares/auth.middleware.js';
-import { requireAdmin } from '../../middlewares/admin.middleware.js';
-import NormModel from './norm.model.js';
+import { requireAuth } from '../../middlewares/auth.middleware.ts';
+import { requireAdmin } from '../../middlewares/admin.middleware.ts';
+import NormModel from './norm.model.ts';
 
 const router = Router();
 const upsertSchema = z.object({

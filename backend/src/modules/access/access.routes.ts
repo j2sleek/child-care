@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { requireAuth } from '../../middlewares/auth.middleware.js';
-import * as AccessService from './access.service.js';
+import { requireAuth } from '../../middlewares/auth.middleware.ts';
+import * as AccessService from './access.service.ts';
 
 const router = Router();
 

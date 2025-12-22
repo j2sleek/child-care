@@ -48,3 +48,5 @@ ChildAccessSchema.index({
 
 const ChildAccessModel: Model<ChildAccessDoc> = mongoose.model<ChildAccessDoc>('ChildAccess', ChildAccessSchema);
 export default ChildAccessModel;
+export type { ChildAccessDoc };
+export type { ChildRole };

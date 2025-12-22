@@ -1,7 +1,7 @@
 import { createServer } from 'http'
-import app from './app.js'
-import { env }from './config/env.js'
-import './config/db.js'
+import app from './app.ts'
+import { env }from './config/env.ts'
+import './config/db.ts'
 
 const server = createServer(app)
 

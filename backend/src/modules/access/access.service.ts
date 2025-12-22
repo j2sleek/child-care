@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
-import ChildAccessModel, { ChildRole } from './childAccess.model.js';
-import UserModel from '../users/user.model.js';
+import ChildAccessModel, { type ChildAccessDoc, type ChildRole } from './childAccess.model.ts';
+import UserModel from '../users/user.model.ts';
 
 export async function inviteUserToChild(inviterUserId: string, childId: string, targetUserId: string, role: ChildRole, permissions: { canRead: boolean; canWrite: boolean; canInvite: boolean }) {
   const inviterAccess = await ChildAccessModel.findOne({ 

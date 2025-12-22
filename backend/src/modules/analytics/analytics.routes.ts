@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { requireAuth } from '../../middlewares/auth.middleware.js';
-import * as AnalyticsService from './analytics.service.js';
+import { requireAuth } from '../../middlewares/auth.middleware.ts';
+import * as AnalyticsService from './analytics.service.ts';
 
 const router = Router();
 

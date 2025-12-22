@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import UserModel from './user.model.js';
-import { requireAuth } from '../../middlewares/auth.middleware.js';
+import UserModel from './user.model.ts';
+import { requireAuth } from '../../middlewares/auth.middleware.ts';
 
 const router = Router();
 router.get('/me', requireAuth, async (req, res, next) => {

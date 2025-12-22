@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import ChildAccessModel, { ChildAccessDoc } from '../modules/access/childAccess.model.js'
+import ChildAccessModel, { type ChildAccessDoc } from '../modules/access/childAccess.model.ts'
 
 export async function getAccessFor(userId: string, childId: string): Promise<ChildAccessDoc | null> {
   return ChildAccessModel.findOne({

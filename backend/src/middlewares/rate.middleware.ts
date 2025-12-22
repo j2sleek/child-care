@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { type Request, type Response } from "express";
 import { RateLimiterMemory } from "rate-limiter-flexible";
 
 const limiter = new RateLimiterMemory({
@@ -6,7 +6,7 @@ const limiter = new RateLimiterMemory({
   duration: 60
 });
 
-export function rateLimit(req: Request, res: Response, next: NextFunction) {
+export function rateLimit(req: Request, res: Response, next: (error?: Error | 'route' | 'router') => void) {
   const key = req.ip || 'anon';
   limiter.consume(key)
     .then(() => next())

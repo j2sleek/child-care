@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { requireAuth } from '../../middlewares/auth.middleware.js';
-import * as EventService from './event.service.js';
+import { requireAuth } from '../../middlewares/auth.middleware.ts';
+import * as EventService from './event.service.ts';
 
 const router = Router();
 const recordSchema = z.object({
