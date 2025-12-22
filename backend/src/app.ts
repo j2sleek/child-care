@@ -3,11 +3,12 @@ import cors from 'cors'
 import helmet from 'helmet'
 import compression from 'compression'
 import morgan from 'morgan'
-import pinoHttp from 'pino-http'
+import { pinoHttp } from 'pino-http'
 
 import { requestId } from './middlewares/requsetId.middleware.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
 import { rateLimit } from './middlewares/rate.middleware.js'
+
 
 const app = express()
 
@@ -20,6 +21,14 @@ app.use(pinoHttp())
 app.use(morgan('tiny'))
 app.use(requestId)
 
+app.get('/health', (_req, res) => res.json({ ok: true }))
+
+app.use('/auth', authRoutes)
+app.use('/users', userRoutes)
+app.use('/children', childRoutes)
+app.use('/access', accessRoutes)
+app.use('/events', eventRoutes)
+app.use('/analytics', analyticsRoutes)
 
 app.use(errorMiddleware)
 
