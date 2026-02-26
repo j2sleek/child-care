@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 
 export interface NormDoc extends Document {
   version: string;
@@ -6,6 +6,10 @@ export interface NormDoc extends Document {
   ageWeeksMin: number; ageWeeksMax: number;
   low: number; high: number;
   notes?: string;
+  source?: 'manual' | 'ai-research';
+  sourceDetails?: string;
+  approvedBy?: Types.ObjectId;
+  approvedAt?: Date;
   createdAt: Date; updatedAt: Date;
 }
 
@@ -37,7 +41,18 @@ const NormSchema = new Schema<NormDoc>({
       type: Number, 
       required: true 
     },
-    notes: { type: String }
+    notes: { type: String },
+    source: {
+      type: String,
+      enum: ['manual', 'ai-research'],
+      default: 'manual'
+    },
+    sourceDetails: { type: String },
+    approvedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    approvedAt: { type: Date }
   }, { timestamps: true }
 );
 
@@ -50,4 +65,3 @@ NormSchema.index({
 
 export const NormModel: Model<NormDoc> = mongoose.model<NormDoc>('Norm', NormSchema);
 export default NormModel;
-export type { NormDoc };

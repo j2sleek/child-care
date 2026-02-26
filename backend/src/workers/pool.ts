@@ -1,7 +1,6 @@
 import { Worker } from 'worker_threads';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import { rejects } from 'assert';
 
 export function runWorker<T = any>(scriptRelPath: string, payload: any, timeoutMs = 30000, signal?: AbortSignal): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -11,31 +10,43 @@ export function runWorker<T = any>(scriptRelPath: string, payload: any, timeoutM
 
     const worker = new Worker(workerPath, { workerData: payload });
 
+    let settled = false;
     let timer: NodeJS.Timeout | undefined;
+
+    function settle(fn: () => void) {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      fn();
+    }
+
     if (timeoutMs) {
       timer = setTimeout(() => {
         worker.terminate();
-        reject(new Error('Worker timeout'));
+        settle(() => reject(new Error('Worker timeout')));
       }, timeoutMs);
     }
 
     if (signal) {
       signal.addEventListener('abort', () => {
         worker.terminate();
-        reject(new Error('Worker aborted'));
+        settle(() => reject(new Error('Worker aborted')));
       });
     }
 
     worker.on('message', (msg) => {
-      if (timer) clearTimeout(timer);
-      resolve(msg as T);
+      settle(() => resolve(msg as T));
     });
     worker.on('error', (err) => {
-      if (timer) clearTimeout(timer);
-      reject(err);
+      settle(() => reject(err));
     });
     worker.on('exit', (code) => {
-      if (code !== 0) reject(new Error(`Worker exit code ${code}`));
+      if (code === 0) {
+        // Worker completed cleanly without sending a message — resolve with undefined
+        settle(() => resolve(undefined as unknown as T));
+      } else {
+        settle(() => reject(new Error(`Worker exited with code ${code}`)));
+      }
     });
   });
 }

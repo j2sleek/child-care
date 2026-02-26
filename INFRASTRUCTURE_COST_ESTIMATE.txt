@@ -1,0 +1,247 @@
+================================================================================
+  CHILD CARE APP — INFRASTRUCTURE LOAD & COST ESTIMATE
+  Generated: 2026-02-24
+================================================================================
+
+ASSUMPTIONS
+-----------
+  - Average user: 1 child, 8 events/day, checks app 3x/day
+  - Pro conversion rate: 15% of MAU
+  - Trial activation rate: 40% of free users
+  - AI chat: pro users send ~5 messages/day
+  - Daily digests: ~60% of children have events in last 24h
+  - Push notifications: ~3/day per active user
+  - Scale points: Early (1K MAU), Growth (10K MAU), Scale (100K MAU)
+
+================================================================================
+1. MONGODB
+================================================================================
+
+Storage per user/month:
+  User doc              ~1 KB
+  Child doc             ~1 KB
+  Care events (240/mo)  ~240 KB
+  AI digests (30/mo)    ~150 KB
+  Chat history          ~10 KB
+  Subscription doc      ~1 KB
+  Access records        ~2 KB
+  Growth measurements   ~5 KB  (new feature)
+  Event templates       ~2 KB  (new feature)
+  Onboarding checklist  ~0.1 KB (new feature)
+  Audit log (~20/mo)    ~10 KB (new feature)
+  Reminders             ~1 KB  (new feature)
+  Invite links          ~0.5 KB (new feature)
+  ─────────────────────────────
+  TOTAL per user        ~423 KB
+
+  Scale       MAU     Storage     Ops/sec (reads+writes)
+  ──────────────────────────────────────────────────────
+  Early       1K      ~420 MB     ~20
+  Growth      10K     ~4.2 GB     ~200
+  Scale       100K    ~42 GB      ~2,000
+
+MongoDB Atlas cost:
+  Early  (M10, 10GB):  ~$57/mo
+  Growth (M20, 20GB):  ~$190/mo
+  Scale  (M40, 80GB):  ~$380/mo
+
+================================================================================
+2. REDIS
+================================================================================
+
+Key patterns and sizes:
+  billing:plan:{userId}         TTL 60s     ~500 B
+  AI cache per child            TTL 1h      ~2 KB
+  Auth refresh tokens           TTL 30d     ~100 B
+  Password reset tokens         TTL 15m     ~100 B
+  Rate limiter counters         TTL 60s     ~50 B
+  Admin metrics cache           TTL 60-300s ~5 KB
+  AI chat rate limit counters   TTL 1d      ~50 B  (new feature)
+  Invite link tokens            TTL varies  ~200 B (new feature)
+
+  Scale       MAU     Peak memory
+  ─────────────────────────────────
+  Early       1K      ~50 MB
+  Growth      10K     ~500 MB
+  Scale       100K    ~5 GB
+
+Redis cost (Redis Cloud / Upstash):
+  Early:   ~$10/mo  (Upstash free tier likely sufficient)
+  Growth:  ~$40/mo
+  Scale:   ~$200/mo
+
+================================================================================
+3. AI (Mistral / OpenAI)
+================================================================================
+
+Token estimates per operation:
+  Insights               ~800 input  / ~400 output
+  Recommendations        ~800 input  / ~400 output
+  Anomalies              ~800 input  / ~300 output
+  Daily digest           ~1,200 input / ~600 output
+  Chat message           ~600 input  / ~300 output
+  Voice extraction       ~200 input  / ~100 output
+  Norms AI suggestion    ~500 input  / ~300 output
+  Pediatrician report    ~1,500 input / ~1,200 output  (new feature)
+
+Mistral pricing: ~$0.20/1M input tokens, ~$0.60/1M output tokens
+
+Per pro user/month (with caching):
+  Digest (30/mo):             ~54K tokens  → ~$0.04
+  AI endpoints (30 calls/mo): ~33K tokens  → ~$0.02
+  Chat (150 msgs/mo):         ~135K tokens → ~$0.09
+  Pediatrician report (2/mo): ~5.4K tokens → ~$0.004
+  ─────────────────────────────────────────────────
+  Total per pro user:         ~$0.154/month
+
+  Scale       Pro users   AI cost/mo
+  ────────────────────────────────────
+  Early       150         ~$23
+  Growth      1,500       ~$231
+  Scale       15,000      ~$2,310
+
+OpenAI Whisper transcription ($0.006/min):
+  Assume 20% of pro users, voice 5x/week, avg 30s clip
+  Early   (30 users):    ~$1/mo
+  Growth  (300 users):   ~$10/mo
+  Scale   (3,000 users): ~$100/mo
+
+Note: OpenAI (gpt-4o) is ~10x more expensive than Mistral.
+      Mistral is the correct default for cost efficiency.
+
+================================================================================
+4. S3 (AVATARS)
+================================================================================
+
+  - Average avatar size: 200 KB
+  - 30% of pro users upload an avatar
+
+  Scale       Pro users   Storage     Cost/mo
+  ─────────────────────────────────────────────
+  Early       150         ~9 MB       <$1
+  Growth      1,500       ~90 MB      ~$2
+  Scale       15,000      ~900 MB     ~$15
+
+S3 cost is negligible at all scales.
+
+================================================================================
+5. EMAIL (SMTP via Nodemailer)
+================================================================================
+
+Events sent:
+  - trial_started
+  - trial_expiring_soon (3 days before)
+  - trial_ended
+  - password reset (existing)
+  - invite link / share invite (new feature)
+  - reminder notifications (new feature)
+
+  Scale       MAU     Emails/month    Provider            Cost/mo
+  ────────────────────────────────────────────────────────────────
+  Early       1K      ~2,500          Resend free (3K/mo) $0
+  Growth      10K     ~25,000         Resend Starter      ~$20
+  Scale       100K    ~250,000        Resend Pro          ~$90
+
+================================================================================
+6. PUSH NOTIFICATIONS (FCM)
+================================================================================
+
+FCM is FREE (Google). Server-side HTTP requests cost is negligible.
+
+Events sent:
+  - trial_started / expiring / ended
+  - care event logged (notify co-caregivers) (new feature)
+  - reminder fired (new feature)
+
+At 100K MAU × 3-5 push/day = 9-15M pushes/month → still FREE via FCM.
+
+================================================================================
+7. COMPUTE (Node.js server)
+================================================================================
+
+Single Node.js process handles: HTTP, schedulers, worker threads.
+
+Active schedulers:
+  - Digest scheduler (hourly check, daily run)
+  - Trial notification scheduler (hourly check, daily run)
+  - Reminder scheduler (hourly check) (new feature)
+  - Event push notification handler (per-request, async) (new feature)
+
+  Scale       MAU     Req/sec (peak)  RAM needed  Recommended
+  ─────────────────────────────────────────────────────────────────────────
+  Early       1K      ~2              256 MB      Single $6/mo VPS (Fly.io)
+  Growth      10K     ~20             512 MB      2x $12/mo instances
+  Scale       100K    ~200            2 GB        4-8x instances + LB ~$150/mo
+
+Note: Worker threads for digests add ~100 MB each.
+      Pool of 5 = +500 MB at scale.
+      PDF generation (new feature) is CPU-intensive — offload to worker thread.
+
+================================================================================
+8. SUGGESTED FEATURES — INCREMENTAL COST IMPACT
+================================================================================
+
+  Feature                     MongoDB     Redis       AI          Compute     Notes
+  ──────────────────────────────────────────────────────────────────────────────────────────
+  1. Onboarding checklist     +~100B/user  —           —           negligible  Tiny field on User
+  2. Event templates          +~2KB/user   —           —           negligible  New model, small
+  3. Invite links             +~500B/link  +token TTL  —           negligible  Short-lived docs
+  4. Care event push notif.   —            —           —           +FCM (free) Free
+  5. Export (CSV/JSON)        burst reads  —           —           CPU spike   Offload to worker
+  6. Growth tracking          +~5KB/child  —           —           negligible  New model
+  7. AI chat rate limit       —            +counter    —           negligible  Redis key/user/day
+  8. Reminders                +~1KB/rem    +scheduler  —           +1 loop     Low overhead
+  9. Audit log                +~500B/event —           —           negligible  Append-only collection
+  10. Multi-language          —            +templates  +10% tokens negligible  Token overhead
+  11. Pediatrician report     burst reads  —           +~2.7K tok  +PDF gen    pdfkit needed
+
+================================================================================
+9. TOTAL COST SUMMARY (CURRENT + ALL SUGGESTED FEATURES)
+================================================================================
+
+  Scale    MAU    MongoDB   Redis   AI       S3   Email   Compute   TOTAL/mo
+  ──────────────────────────────────────────────────────────────────────────
+  Early    1K     $57       $10     $24      $1   $0      $6        ~$98
+  Growth   10K    $190      $40     $241     $2   $20     $24       ~$517
+  Scale    100K   $380      $200    $2,410   $15  $90     $150      ~$3,245
+
+Suggested features add <2% to total infra cost at all scales.
+
+================================================================================
+10. REVENUE vs. INFRA COST (@ $9.99/mo Pro subscription, 15% conversion)
+================================================================================
+
+  Scale    Pro users   Revenue/mo    Infra cost   Gross margin
+  ──────────────────────────────────────────────────────────────
+  Early    150         $1,499        ~$98         ~93%
+  Growth   1,500       $14,985       ~$517        ~97%
+  Scale    15,000      $149,850      ~$3,245      ~98%
+
+================================================================================
+11. KEY OBSERVATIONS
+================================================================================
+
+  1. AI IS THE DOMINANT COST DRIVER at scale ($2,410/mo out of $3,245 at 100K MAU).
+     Redis caching (already implemented) is the single most important cost control.
+     The AI chat rate limit feature directly protects against runaway AI costs.
+
+  2. MONGODB ATLAS TIERS are the second largest cost. CareEvent is the largest
+     collection. Consider a TTL index or archival policy for events older than
+     12 months at scale (>50K MAU).
+
+  3. THE BUSINESS IS HIGHLY MARGIN-POSITIVE even at early scale. Infrastructure
+     costs are a very small fraction of subscription revenue at all scales.
+
+  4. COMPUTE IS NEARLY FREE. Node.js handles this workload efficiently.
+     No horizontal scaling needed until ~50K MAU.
+
+  5. PDF GENERATION (pediatrician report) is CPU-intensive. It is already
+     planned to run in a worker thread to avoid blocking the event loop.
+
+  6. EXPORT ENDPOINT can cause read spikes on MongoDB for large date ranges.
+     Consider streaming the response and adding a per-user rate limit on exports.
+
+  7. ALL SUGGESTED FEATURES combined add less than $60/mo even at 100K MAU,
+     making them all cost-justified to implement regardless of scale.
+
+================================================================================

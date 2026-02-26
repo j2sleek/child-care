@@ -1,4 +1,4 @@
-import { type Request, type Response } from "express"
+import { type Request, type Response, type NextFunction } from "express"
 import jwt from 'jsonwebtoken'
 import { env } from '../config/env.ts'
 
@@ -7,7 +7,7 @@ export interface JwtPayload {
   email: string
 }
 
-export function requireAuth(req: Request, res: Response, next: (error?: Error | 'route' | 'router') => void) {
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const header = req.headers.authorization
   if (!header || !header.startsWith('Bearer ')) {
     return res.status(401).json({
@@ -17,8 +17,11 @@ export function requireAuth(req: Request, res: Response, next: (error?: Error | 
   }
   const token = header.replace('Bearer ', '')
   try {
-    const payload = jwt.verify(token, env.JWT_SECRET) as JwtPayload
-    (req as any).user = {
+    const payload = jwt.verify(token, env.JWT_SECRET, {
+      issuer: env.JWT_ISSUER,
+      audience: env.JWT_AUDIENCE
+    }) as JwtPayload
+    req.user = {
       id: payload.sub,
       email: payload.email
     }

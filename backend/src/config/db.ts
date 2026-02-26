@@ -1,15 +1,20 @@
 import mongoose from 'mongoose'
 import { env } from './env.ts'
+import logger from './logger.ts'
 
 mongoose.set('strictQuery', true)
 mongoose.set('autoIndex', env.NODE_ENV !== 'production')
 
-mongoose
+export const dbReady = mongoose
   .connect(env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
+  .then(() => logger.info('MongoDB connected'))
   .catch((err) => {
-    console.error('MongoDB connection error:', err)
+    logger.fatal({ err }, 'MongoDB connection error')
     process.exit(1)
   })
 
-  export default mongoose
+export function isDbReady(): boolean {
+  return mongoose.connection.readyState === 1;
+}
+
+export default mongoose

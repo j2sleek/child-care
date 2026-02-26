@@ -45,8 +45,8 @@ const CareEventSchema = new Schema<CareEventDoc>({
 );
 
 CareEventSchema.index({ childId: 1, startTime: 1 });
+// Supports analytics queries that filter by childId + type then sort by startTime
+CareEventSchema.index({ childId: 1, type: 1, startTime: 1 });
 
 const CareEventModel: Model<CareEventDoc> = mongoose.model<CareEventDoc>('CareEvent', CareEventSchema);
 export default CareEventModel;
-export type { CareEventDoc };
-export type { CareEventType };

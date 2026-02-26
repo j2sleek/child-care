@@ -41,12 +41,9 @@ const ChildAccessSchema = new Schema<ChildAccessDoc>({
   }, { timestamps: true }
 );
 
-ChildAccessSchema.index({ 
-  childId: 1, 
-  userId: 1 },
-  { unique: true });
+ChildAccessSchema.index({ childId: 1, userId: 1 }, { unique: true });
+// Supports requirePermission() which queries { userId, childId }
+ChildAccessSchema.index({ userId: 1, childId: 1 });
 
 const ChildAccessModel: Model<ChildAccessDoc> = mongoose.model<ChildAccessDoc>('ChildAccess', ChildAccessSchema);
 export default ChildAccessModel;
-export type { ChildAccessDoc };
-export type { ChildRole };

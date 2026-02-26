@@ -1,0 +1,43 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { requireAuth } from "../../middlewares/auth.middleware.js";
+import { requireAdmin } from "../../middlewares/admin.middleware.js";
+import { validateObjectId } from "../../utils/validate.js";
+import NormModel from "./norm.model.js";
+const router = Router();
+const upsertSchema = z.object({
+    version: z.string().min(1),
+    metric: z.enum(['sleepMinutesPerDay', 'feedsPerDay', 'wakeWindowMinutes']),
+    ageWeeksMin: z.number().int().nonnegative(),
+    ageWeeksMax: z.number().int().nonnegative(),
+    low: z.number().nonnegative(),
+    high: z.number().nonnegative(),
+    notes: z.string().optional()
+});
+router.post('/norms', requireAuth, requireAdmin, async (req, res) => {
+    const body = upsertSchema.parse(req.body);
+    const doc = await NormModel.findOneAndUpdate({
+        version: body.version,
+        metric: body.metric,
+        ageWeeksMin: body.ageWeeksMin,
+        ageWeeksMax: body.ageWeeksMax
+    }, body, {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true
+    });
+    res.status(201).json(doc);
+});
+router.get('/norms', requireAuth, requireAdmin, async (_req, res) => {
+    res.json(await NormModel.find().sort({
+        version: -1,
+        metric: 1,
+        ageWeeksMin: 1
+    }).lean());
+});
+router.delete('/norms/:id', requireAuth, requireAdmin, async (req, res) => {
+    validateObjectId(req.params.id, 'normId');
+    await NormModel.findByIdAndDelete(req.params.id);
+    res.status(204).send();
+});
+export default router;
