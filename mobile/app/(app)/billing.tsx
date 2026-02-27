@@ -7,6 +7,7 @@ import {
   Alert,
   TouchableOpacity,
   Linking,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format, parseISO } from 'date-fns';
@@ -85,9 +86,10 @@ export default function BillingScreen() {
   };
 
   const handleManageSubscription = () => {
-    // Opens App Store / Play Store subscription management
     const url =
-      'https://apps.apple.com/account/subscriptions'; // iOS
+      Platform.OS === 'android'
+        ? 'https://play.google.com/store/account/subscriptions'
+        : 'https://apps.apple.com/account/subscriptions';
     Linking.openURL(url).catch(() => {});
   };
 

@@ -22,7 +22,7 @@ type Metric = 'weightKg' | 'heightCm' | 'headCircumferenceCm';
 
 export default function GrowthScreen() {
   const { childId } = useLocalSearchParams<{ childId: string }>();
-  const { data, isLoading, refetch } = useGrowth(childId);
+  const { data, isLoading, isRefetching, refetch } = useGrowth(childId);
   const createEntry = useCreateGrowthEntry(childId);
   const deleteEntry = useDeleteGrowthEntry(childId);
 
@@ -68,8 +68,8 @@ export default function GrowthScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-gray-50"
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
+      className="flex-1 bg-gray-50 dark:bg-gray-950"
+      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
     >
       <View className="px-4 pt-4">
         <View className="flex-row gap-2 mb-4">
@@ -78,10 +78,12 @@ export default function GrowthScreen() {
               key={m}
               onPress={() => setActiveMetric(m)}
               className={`flex-1 py-2 rounded-xl border items-center ${
-                activeMetric === m ? 'border-primary-500 bg-primary-50' : 'border-gray-200 bg-white'
+                activeMetric === m
+                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-950'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
               }`}
             >
-              <Text className={`text-xs font-semibold ${activeMetric === m ? 'text-primary-600' : 'text-gray-500'}`}>
+              <Text className={`text-xs font-semibold ${activeMetric === m ? 'text-primary-600 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400'}`}>
                 {m === 'weightKg' ? 'Weight' : m === 'heightCm' ? 'Height' : 'Head'}
               </Text>
             </TouchableOpacity>
@@ -92,36 +94,41 @@ export default function GrowthScreen() {
           <GrowthChart data={entries} metric={activeMetric} />
         </Card>
 
-        <Text className="text-sm font-semibold text-gray-500 uppercase mb-2">Records</Text>
+        <Text className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Records</Text>
         {isLoading ? (
           <ActivityIndicator color="#6366f1" />
         ) : entries.length === 0 ? (
           <View className="items-center py-8">
-            <Text className="text-4xl mb-2">📏</Text>
-            <Text className="text-gray-500">No growth records yet.</Text>
+            <Text className="text-4xl mb-2" accessible={false}>📏</Text>
+            <Text className="text-gray-500 dark:text-gray-400">No growth records yet.</Text>
           </View>
         ) : (
           entries.slice().reverse().map((entry) => (
             <Card key={entry._id} className="mb-2">
               <View className="flex-row justify-between items-start">
                 <View>
-                  <Text className="font-semibold text-gray-900">
+                  <Text className="font-semibold text-gray-900 dark:text-white">
                     {format(parseISO(entry.date), 'MMM d, yyyy')}
                   </Text>
                   <View className="flex-row gap-3 mt-1">
                     {entry.weightKg != null ? (
-                      <Text className="text-sm text-gray-600">{entry.weightKg}kg</Text>
+                      <Text className="text-sm text-gray-600 dark:text-gray-300">{entry.weightKg}kg</Text>
                     ) : null}
                     {entry.heightCm != null ? (
-                      <Text className="text-sm text-gray-600">{entry.heightCm}cm</Text>
+                      <Text className="text-sm text-gray-600 dark:text-gray-300">{entry.heightCm}cm</Text>
                     ) : null}
                     {entry.headCircumferenceCm != null ? (
-                      <Text className="text-sm text-gray-600">HC: {entry.headCircumferenceCm}cm</Text>
+                      <Text className="text-sm text-gray-600 dark:text-gray-300">HC: {entry.headCircumferenceCm}cm</Text>
                     ) : null}
                   </View>
                 </View>
-                <TouchableOpacity onPress={() => handleDelete(entry._id)}>
-                  <Text className="text-red-400 text-base">✕</Text>
+                <TouchableOpacity
+                  onPress={() => handleDelete(entry._id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Delete growth entry for ${format(parseISO(entry.date), 'MMM d, yyyy')}`}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text className="text-red-400 dark:text-red-500 text-base">✕</Text>
                 </TouchableOpacity>
               </View>
             </Card>

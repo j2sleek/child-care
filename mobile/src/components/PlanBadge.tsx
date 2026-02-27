@@ -8,6 +8,6 @@ export function PlanBadge() {
   if (!data) return null;
 
   if (data.plan === 'pro') return <Badge label="PRO" variant="pro" />;
-  if (data.trial.active) return <Badge label="TRIAL" variant="info" />;
+  if (data.trial?.active) return <Badge label="TRIAL" variant="info" />;
   return <Badge label="FREE" variant="default" />;
 }

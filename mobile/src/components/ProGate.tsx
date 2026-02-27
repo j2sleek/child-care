@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, Linking, Platform } from 'react-native';
 import { useBilling, useStartTrial } from '../hooks/useBilling';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
@@ -58,7 +58,13 @@ export function ProGate({ feature = 'This feature', children }: ProGateProps) {
             </Text>
             <Button
               title={t('billing.upgradePro')}
-              onPress={() => {}}
+              onPress={() => {
+                const url =
+                  Platform.OS === 'android'
+                    ? 'https://play.google.com/store/account/subscriptions'
+                    : 'https://apps.apple.com/account/subscriptions';
+                Linking.openURL(url).catch(() => {});
+              }}
               className="w-full"
             />
           </>

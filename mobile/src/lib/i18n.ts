@@ -171,6 +171,11 @@ export const useLocaleStore = create<LocaleState>((set) => ({
   },
 }));
 
+// Standalone setter — usable outside React components (e.g. direct imports)
+export function setLocale(locale: string) {
+  useLocaleStore.getState().setLocale(locale);
+}
+
 // Convenience hook — call in any component that renders translated strings
 export function useI18n() {
   const { locale } = useLocaleStore();

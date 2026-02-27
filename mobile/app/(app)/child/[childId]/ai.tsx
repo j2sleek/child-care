@@ -70,10 +70,15 @@ export default function AiScreen() {
               key={t}
               onPress={() => setTab(t)}
               className={`flex-1 py-2 rounded-xl items-center border ${
-                tab === t ? 'border-primary-500 bg-primary-50' : 'border-gray-200 bg-white'
+                tab === t
+                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-950'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
               }`}
+              accessibilityRole="tab"
+              accessibilityLabel={i18n.t(`ai.${t}`)}
+              accessibilityState={{ selected: tab === t }}
             >
-              <Text className={`text-xs font-semibold capitalize ${tab === t ? 'text-primary-600' : 'text-gray-500'}`}>
+              <Text className={`text-xs font-semibold capitalize ${tab === t ? 'text-primary-600 dark:text-primary-300' : 'text-gray-500 dark:text-gray-400'}`}>
                 {i18n.t(`ai.${t}`)}
               </Text>
             </TouchableOpacity>
@@ -182,7 +187,10 @@ export default function AiScreen() {
               <TouchableOpacity
                 onPress={sendMessage}
                 disabled={!inputText.trim() || chat.isPending}
-                className={`bg-primary-500 rounded-2xl px-4 py-3 ${!inputText.trim() ? 'opacity-50' : ''}`}
+                className={`bg-primary-500 rounded-2xl px-4 py-3 ${!inputText.trim() || chat.isPending ? 'opacity-50' : ''}`}
+                accessibilityRole="button"
+                accessibilityLabel={i18n.t('ai.send')}
+                accessibilityState={{ disabled: !inputText.trim() || chat.isPending }}
               >
                 <Text className="text-white font-semibold">{i18n.t('ai.send')}</Text>
               </TouchableOpacity>

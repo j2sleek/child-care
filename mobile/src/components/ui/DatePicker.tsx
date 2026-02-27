@@ -11,7 +11,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { format, getYear, getMonth, getDate } from 'date-fns';
+import { format, getYear, getMonth, getDate, getDaysInMonth } from 'date-fns';
 
 interface DatePickerProps {
   label?: string;
@@ -87,13 +87,15 @@ export const DatePicker = memo(function DatePicker({
 
           {/* Year / Month / Day row */}
           <View className="flex-row justify-center gap-2 mb-6">
-            {/* Day */}
+            {/* Day — clamped to actual days in the selected month/year */}
             <ScrollView className="h-32 w-16" showsVerticalScrollIndicator={false}>
-              {range(1, 31).map((d) => (
+              {range(1, getDaysInMonth(new Date(getYear(tempDate), getMonth(tempDate)))).map((d) => (
                 <TouchableOpacity
                   key={d}
                   onPress={() => setTempDate(new Date(getYear(tempDate), getMonth(tempDate), d, tempDate.getHours(), tempDate.getMinutes()))}
                   className={`py-2 items-center rounded-lg ${getDate(tempDate) === d ? 'bg-primary-100 dark:bg-primary-900' : ''}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Day ${d}`}
                 >
                   <Text className={`text-sm ${getDate(tempDate) === d ? 'text-primary-600 dark:text-primary-300 font-bold' : 'text-gray-700 dark:text-gray-300'}`}>{d}</Text>
                 </TouchableOpacity>
@@ -102,28 +104,41 @@ export const DatePicker = memo(function DatePicker({
 
             {/* Month */}
             <ScrollView className="h-32 w-14" showsVerticalScrollIndicator={false}>
-              {MONTHS.map((m, i) => (
+              {MONTHS.map((m, i) => {
+                // Clamp day when switching months (e.g. Jan 31 → Feb clamps to 28)
+                const daysInNewMonth = getDaysInMonth(new Date(getYear(tempDate), i));
+                const clampedDay = Math.min(getDate(tempDate), daysInNewMonth);
+                return (
                 <TouchableOpacity
                   key={m}
-                  onPress={() => setTempDate(new Date(getYear(tempDate), i, getDate(tempDate), tempDate.getHours(), tempDate.getMinutes()))}
+                  onPress={() => setTempDate(new Date(getYear(tempDate), i, clampedDay, tempDate.getHours(), tempDate.getMinutes()))}
                   className={`py-2 items-center rounded-lg ${getMonth(tempDate) === i ? 'bg-primary-100 dark:bg-primary-900' : ''}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={m}
                 >
                   <Text className={`text-sm ${getMonth(tempDate) === i ? 'text-primary-600 dark:text-primary-300 font-bold' : 'text-gray-700 dark:text-gray-300'}`}>{m}</Text>
                 </TouchableOpacity>
-              ))}
+                );
+              })}
             </ScrollView>
 
             {/* Year */}
             <ScrollView className="h-32 w-16" showsVerticalScrollIndicator={false}>
-              {range(minYear, maxYear).map((y) => (
+              {range(minYear, maxYear).map((y) => {
+                const daysInNewMonth = getDaysInMonth(new Date(y, getMonth(tempDate)));
+                const clampedDay = Math.min(getDate(tempDate), daysInNewMonth);
+                return (
                 <TouchableOpacity
                   key={y}
-                  onPress={() => setTempDate(new Date(y, getMonth(tempDate), getDate(tempDate), tempDate.getHours(), tempDate.getMinutes()))}
+                  onPress={() => setTempDate(new Date(y, getMonth(tempDate), clampedDay, tempDate.getHours(), tempDate.getMinutes()))}
                   className={`py-2 items-center rounded-lg ${getYear(tempDate) === y ? 'bg-primary-100 dark:bg-primary-900' : ''}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Year ${y}`}
                 >
                   <Text className={`text-sm ${getYear(tempDate) === y ? 'text-primary-600 dark:text-primary-300 font-bold' : 'text-gray-700 dark:text-gray-300'}`}>{y}</Text>
                 </TouchableOpacity>
-              ))}
+                );
+              })}
             </ScrollView>
           </View>
 

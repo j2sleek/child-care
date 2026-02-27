@@ -1,5 +1,5 @@
 import '../global.css';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -11,6 +11,7 @@ import { apiClient } from '../src/api/client';
 import { registerForPushNotifications } from '../src/lib/notifications';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 
+// Singleton — must live outside the component to survive re-renders
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { staleTime: 30_000, retry: 1 },
@@ -21,8 +22,12 @@ export default function RootLayout() {
   const { hydrate, setUser } = useAuthStore();
   const hydrateChild = useChildStore((s) => s.hydrate);
   const colorScheme = useColorScheme();
+  // Guard so the effect only runs once even under React strict-mode double-invoke
+  const initialized = useRef(false);
 
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
     Promise.all([hydrate(), hydrateChild()]).then(async () => {
       const { token } = useAuthStore.getState();
       if (token) {
