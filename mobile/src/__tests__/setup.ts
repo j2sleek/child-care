@@ -1,4 +1,6 @@
-import '@testing-library/jest-native/extend-expect';
+// Built-in matchers from @testing-library/react-native v12.4+
+// (replaces deprecated @testing-library/jest-native)
+import '@testing-library/react-native/extend-expect';
 
 // Silence Animated warnings in tests
 jest.useFakeTimers();
